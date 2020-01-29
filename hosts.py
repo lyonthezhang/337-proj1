@@ -1,5 +1,5 @@
 import pandas as pd
-from statistics import mode
+import numpy as np
 import spacy
 import json
 
@@ -27,11 +27,6 @@ def get_tweet_data(year):
     tweets = [remove_symbols(tweet) for tweet in tweets]
     df = pd.DataFrame(tweets, columns = ['text'])
     return df
-
-# load data
-data_2013 = get_tweet_data(2013)
-data_2015 = get_tweet_data(2015)
-data_2020 = get_tweet_data(2020)
 
 # return list of 'PERSON' in tweet
 def get_person(tweet):
