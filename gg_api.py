@@ -1,4 +1,5 @@
 from winners import run_nominees
+from hosts import run_hosts
 
 '''Version 0.35'''
 
@@ -10,7 +11,7 @@ def get_hosts(year):
     '''Hosts is a list of one or more strings. Do NOT change the name
     of this function or what it returns.'''
     # Your code here
-    hosts = ["amy poehler", "tina fey"]
+    hosts = run_hosts(year)
     return hosts
 
 def get_awards(year):
