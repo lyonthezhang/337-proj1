@@ -5,6 +5,7 @@ def get_person(tweet):
 
 # remove punctuations from string
 def removePunctuation(string):
+    string = string.replace("...", " ")
     punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
     for x in string.lower():
         if x in punctuations:
@@ -70,12 +71,52 @@ def position_of_ppl(tweet, person):
     else:
         return 0
 
-def get_positions(df):
-    df['position'] = df.apply(lambda row: position_of_ppl(row['text'], row['full names']), axis = 1)
+def cecil_position(tweet, person):
+    names = ['Cecil B. DeMille Award', 'Cecil B. DeMille', 'Cecil']
+    tweet = removePunctuation(tweet).lower()
+
+    print(person[0].lower().split()[0])
+    print(tweet)
+
+    ppl = person[0].lower().split()[0]
+    ppl_idx = tweet.lower().split().index(ppl)
+
+    best_idx = tweet.lower().split().index('cecil')
+
+    if (ppl_idx < best_idx):
+        return 1
+    else:
+        return 0
+
+# True if looking at cecil award
+def get_positions(df, cecil_award = False):
+    if (cecil_award):
+        df['position'] = df.apply(lambda row: cecil_position(row['text'], row['full names']), axis = 1)
+    else:
+        df['position'] = df.apply(lambda row: position_of_ppl(row['text'], row['full names']), axis = 1)
     return df[df['position'] == 1]
 
+# get keywords of award
+def get_keywords_of_award(award):
+    a = award
+    stopWords = set(stopwords.words('english'))
+    # remove punctuation marks
+    award = award.translate(str.maketrans('', '', string.punctuation))
+    #remove stopwords
+    award = word_tokenize(award)
+    award = [word for word in award if word not in stopwords.words('english')]
+    award = [word.lower() for word in award]
+    # remove 'best' and 'award'
+    if 'best' in award: award.remove('best')
+    if 'award' in award: award.remove('award')
+    # join words
+    award = " ".join(award)
+    return award
 
 def get_presenters(award, data):
+    # start time
+    start = time.time()
+
     # remove RT
     df = data[data["text"].str.contains("RT") == False]
 
@@ -85,6 +126,8 @@ def get_presenters(award, data):
     # only get tweets where a key word shows up
     keywords = re.compile('=present|presents|presented|gave|gives|give|announce|announces|announced', re.IGNORECASE)
     df = get_tweets_with_keywords(df, keywords)
+
+    print("Award: {} ... shape {}".format(award, df.shape))
 
     # get df with 'present, gave, etc.'
     df['presents_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'presents'))
@@ -105,8 +148,12 @@ def get_presenters(award, data):
     df['full names'] = df['text'].apply(lambda x: get_person(nlp(x)))
     df = df[df['full names'].str.len() != 0] # remove rows with no 'PERSON'
 
+    print(df)
     # get position of NNP
-    df = get_positions(df)
+    if (award == 'cecil b. demille award'):
+        df = get_positions(df, True)
+    else:
+        df = get_positions(df)
 
     # length of string
     #len(s.split())
@@ -114,5 +161,14 @@ def get_presenters(award, data):
     # get person who is talked about 80% of the time
     presenters = df['full names'].value_counts().argmax()
 
+    # end time
+    end = time.time()
+
+    print("Time elapsed: {}".format(end - start))
 
     return df, presenters
+
+def run_presenters(year):
+    data = get_tweet_data(year)
+    df, presenters = get_presenters(award, data)
+    return presenters
