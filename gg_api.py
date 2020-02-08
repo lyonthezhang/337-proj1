@@ -1,4 +1,5 @@
-from winners import run_nominees
+from winners import run_winners
+from nominees import run_nominees
 from hosts import run_hosts
 
 '''Version 0.35'''
@@ -26,6 +27,8 @@ def get_nominees(year):
     names as keys, and each entry a list of strings. Do NOT change
     the name of this function or what it returns.'''
     # Your code here
+
+    # nominees = run_nominees(year)
     nominees = {}
     for award in OFFICIAL_AWARDS_1315:
         nominees[award] = []
@@ -39,8 +42,7 @@ def get_winner(year):
     # winners = {}
     # for award in OFFICIAL_AWARDS_1315:
     #     winners[award] = []
-    winners = run_nominees(year)
-
+    winners = run_winners(year)
     return winners
 
 def get_presenters(year):
