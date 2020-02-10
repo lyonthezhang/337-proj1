@@ -31,8 +31,6 @@ def remove_symbols(a_tweet):
 
 # load tweet data
 def get_tweet_data(year):
-    if (year == 2020):
-        return pd.read_json('gg2020.json', lines = True)
     file_string = 'gg' + str(year) + '.json'
     tweets = {}
     with open(file_string, 'r') as f:
@@ -492,6 +490,8 @@ def get_presenters(award, data):
 
 # get all presenters for specific year
 def run_presenters(year):
+    print("START PRESENTERS")
+    start = time.time()
     data = get_tweet_data(year)
 
     seperator = ' '
@@ -500,8 +500,8 @@ def run_presenters(year):
 
     for category_name in OFFICIAL_AWARDS_1315:
         # print(category_name)
-        data = get_tweet_data(year)
         presenter_lst = get_presenters(category_name, data)
         presenters[category_name] = presenter_lst
 
+    print("ENDING PRESENTErs; {}".format(time.time() - start))
     return presenters
