@@ -142,6 +142,7 @@ def remove_stopwords(text):
     stop_words.append('television')
     stop_words.append('motion')
     stop_words.append('picture')
+    stop_words.append('series')
     stopwords_dict = Counter(stop_words)
 
     text = ' '.join([word for word in text.split() if word not in stopwords_dict])
@@ -149,7 +150,6 @@ def remove_stopwords(text):
 
 
 def run_nominees(year):
-    year = 2013
     tweets = get_tweet_data(year)
 
     OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
@@ -157,8 +157,8 @@ def run_nominees(year):
     for a in OFFICIAL_AWARDS_1315:
         d[a] = {}
 
-    keywords_lst = [['win', 'hope', ' best '], ['nominated for', ' best '], ['should have won', ' best ']]
-
+    keywords_lst = [['win', 'hope', ' best '], ['nominated for', ' best '], ['should have won', ' best '], ['didn\'t win', ' best ']]
+    # ['nomin', ' best ', 'tv'], ['nomin', ' best act']
     nlp = spacy.load('en_core_web_sm')
     for keywords in keywords_lst:
         # keywords = 
