@@ -1,17 +1,13 @@
 import numpy as np
 import pandas as pd
-import time
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 import spacy
-from statistics import mode
 import json
 import string
 import re
-import difflib
 from fuzzywuzzy import process
-from scipy import stats
 from fuzzywuzzy import fuzz
 from collections import Counter
 
@@ -124,19 +120,6 @@ def index_tweet(tweet, word):
     else:
         return -1
 
-def cecil_position(tweet, person):
-    names = ['Cecil B. DeMille Award', 'Cecil B. DeMille', 'Cecil']
-    tweet = removePunctuation(tweet).lower()
-    return 1
-    for p in person:
-        ppl = p.lower().split()[0]
-        ppl_idx = tweet.lower().split().index(ppl)
-        best_idx = tweet.lower().split().index('cecil')
-        if (ppl_idx < best_idx):
-            return 1
-        else:
-            return 1
-
 """
 return 1 if person mentioned before award
 """
@@ -161,10 +144,13 @@ def position_of_ppl(tweet, person):
     else:
         return 1
 
+"""
+determine position of name relative to verb
+"""
 # True if looking at cecil award
 def get_positions(df, cecil_award = False):
     if (cecil_award):
-        df['position'] = df.apply(lambda row: cecil_position(row['text'], row['full names']), axis = 1)
+        df['position'] = 1#df.apply(lambda row: cecil_position(row['text'], row['full names']), axis = 1)
     else:
         df['position'] = df.apply(lambda row: position_of_ppl(row['text'], row['full names']), axis = 1)
     return df[df['position'] == 1]
@@ -173,11 +159,9 @@ def get_positions(df, cecil_award = False):
 get keywords of award
 """
 def get_keywords_of_award(award):
-    or_in_award = False
     a = award
     awards_lst = award.split()
 
-    if 'or' in awards_lst: or_in_award = True
     stopWords = set(stopwords.words('english'))
     # remove punctuation marks
     award = award.translate(str.maketrans('', '', string.punctuation))
@@ -231,8 +215,6 @@ def get_keywords_of_award(award):
 
     # join words
     award = " ".join(award)
-
-    #print("old: {} ... after: {}".format(a, award))
 
     return award
 
@@ -376,16 +358,9 @@ def compute_mode(names):
                 result.append(name)
     return result
 
-def remove_rt_from_tweet(tweet):
-    if 'RT' in tweet:
-        result = tweet.replace("RT", "")
-        return result
-    if 'rt' in tweet:
-        result = tweet.replace("rt", "")
-        return result
-    else:
-        return tweet
-
+"""
+remove names from list that are similar to each other
+"""
 def remove_similar_names(names):
     result = sorted(names)
     for name in names:
@@ -399,25 +374,13 @@ def remove_similar_names(names):
     return result
 
 """
-get 'or' keywords
+get presenters for specific award
 """
-def get_or_keywords(award):
-    string = award.lower().split()
-    key_1 = []
-    key_2 = []
-    if 'television series' in award:
-        key_1.append('tv')
-        key_1.append('series')
-    if 'or' in string:
-        or_idx = string.index('or')
-        key_2.append(string[or_idx - 1])
-        key_2.append(string[or_idx + 1])
-    return key_1, key_2
-
 def get_presenters(award, data):
-    print(award)
+
     if (data.shape[0] == 0):
         return "NA"
+
     # get keywords
     keywords = list(get_keywords_of_award(award).split())
 
@@ -431,11 +394,7 @@ def get_presenters(award, data):
     if (df.shape[0] == 0):
         return "NA"
 
-
     df = df.drop_duplicates(subset = "text")
-
-    df['filtered text'] = df['text'].apply(lambda x: remove_rt_from_tweet(x))
-
 
     # get list of people in tweets
     nlp = spacy.load("en_core_web_sm")
@@ -450,7 +409,6 @@ def get_presenters(award, data):
 
     if (df.shape[0] == 0):
         return "NA"
-
 
     #get indices of verbs
     df['verb_index'] = df['text'].apply(lambda tweet: get_index(tweet))
@@ -485,23 +443,21 @@ def get_presenters(award, data):
 
 
 """
----------------------- get presenters for year ---------------------
+---------------------- get presenters for specific year ---------------------
 """
 
-# get all presenters for specific year
 def run_presenters(year):
-    print("START PRESENTERS")
-    start = time.time()
+
     data = get_tweet_data(year)
 
-    seperator = ' '
     presenters = {}
+
     OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
 
-    for category_name in OFFICIAL_AWARDS_1315:
-        # print(category_name)
-        presenter_lst = get_presenters(category_name, data)
-        presenters[category_name] = presenter_lst
+    OFFICIAL_AWARDS_1819 = ['best motion picture - drama', 'best motion picture - musical or comedy', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best performance by an actress in a motion picture - musical or comedy', 'best performance by an actor in a motion picture - musical or comedy', 'best performance by an actress in a supporting role in any motion picture', 'best performance by an actor in a supporting role in any motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best motion picture - animated', 'best motion picture - foreign language', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best television series - musical or comedy', 'best television limited series or motion picture made for television', 'best performance by an actress in a limited series or a motion picture made for television', 'best performance by an actor in a limited series or a motion picture made for television', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best performance by an actress in a television series - musical or comedy', 'best performance by an actor in a television series - musical or comedy', 'best performance by an actress in a supporting role in a series, limited series or motion picture made for television', 'best performance by an actor in a supporting role in a series, limited series or motion picture made for television', 'cecil b. demille award']
 
-    print("ENDING PRESENTErs; {}".format(time.time() - start))
+    for award in OFFICIAL_AWARDS_1315:
+        presenter_lst = get_presenters(award, data)
+        presenters[award] = presenter_lst
+
     return presenters
