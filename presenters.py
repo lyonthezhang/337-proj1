@@ -295,38 +295,41 @@ def get_names_after_verb(df):
         string = tweet.lower().split()
         person_lst = row.filtered
         idx = row.verb_index
-        for p in person_lst:
-            p = removePunctuation(p)
-            ppl = p.lower().split()
-            if len(ppl) > 0:
-                if ppl[0] in string:
-                    person_idx = string.index(ppl[0])
-                    if 'wins' in string:
-                        wins_idx = string.index('wins')
-                        if wins_idx - 2 == person_idx:
-                            continue
-                    if 'win' in string:
-                        win_idx = string.index('win')
-                        if win_idx - 2 == person_idx:
-                            continue
-                    if 'won' in string:
-                        won_idx = string.index('won')
-                        if won_idx - 2 == person_idx:
-                            continue
+        if idx:
+            for p in person_lst:
+                p = removePunctuation(p)
+                ppl = p.lower().split()
+                if len(ppl) > 0:
+                    if ppl[0] in string:
+                        person_idx = string.index(ppl[0])
+                        if 'wins' in string:
+                            wins_idx = string.index('wins')
+                            if wins_idx - 2 == person_idx:
+                                continue
+                        if 'win' in string:
+                            win_idx = string.index('win')
+                            if win_idx - 2 == person_idx:
+                                continue
+                        if 'won' in string:
+                            won_idx = string.index('won')
+                            if won_idx - 2 == person_idx:
+                                continue
 
-                    #if 'win' and 'won' not in string.index(person_idx + 1):
+                        #if 'win' and 'won' not in string.index(person_idx + 1):
 
-                    if (person_idx > -1):
-                        if (person_idx < idx):
-                            person = p.strip()
-                            result.append(person)
-                        else:
-                            if ('with' in string):
-                                with_idx = string.index('with')
-                                if (with_idx > idx):
-                                    person = p.strip()
-                                    result.append(person)
-    return result
+                        if (person_idx > -1):
+                            if (person_idx < idx):
+                                person = p.strip()
+                                result.append(person)
+                            else:
+                                if ('with' in string):
+                                    with_idx = string.index('with')
+                                    if (with_idx > idx):
+                                        person = p.strip()
+                                        result.append(person)
+            return result
+        else:
+            return person_lst
 
 """
 filter names baed on punctuation and award words
@@ -364,14 +367,15 @@ get mode (top 2) of list
 def compute_mode(names):
     result = []
     counts = Counter(names)
-    maxcount = max(counts.values())
-    for person in counts.items():
-        if len(result) >= 2:
-            break
-        name = person[0]
-        count = person[1]
-        if count == maxcount:
-            result.append(name)
+    if counts:
+        maxcount = max(counts.values())
+        for person in counts.items():
+            if len(result) >= 2:
+                break
+            name = person[0]
+            count = person[1]
+            if count == maxcount:
+                result.append(name)
     return result
 
 def remove_rt_from_tweet(tweet):
