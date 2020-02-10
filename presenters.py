@@ -1,35 +1,87 @@
-# return list of 'PERSON' in tweet
+import numpy as np
+import pandas as pd
+import time
+import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.corpus import stopwords
+import spacy
+from statistics import mode
+import json
+import string
+import re
+import difflib
+from fuzzywuzzy import process
+from scipy import stats
+from fuzzywuzzy import fuzz
+from collections import Counter
+
+"""
+------------------ functions to load and prep data ------------------
+"""
+# remove unimportant symbols from tweet data
+def remove_symbols(a_tweet):
+    entity_prefixes = ['@','#']
+    words = []
+    for word in a_tweet.split():
+        word = word.strip()
+        if word:
+            if word[0].lower() not in entity_prefixes:
+                words.append(word)
+    return ' '.join(words)
+
+# load tweet data
+def get_tweet_data(year):
+    if (year == 2020):
+        return pd.read_json('gg2020.json', lines = True)
+    file_string = 'gg' + str(year) + '.json'
+    tweets = {}
+    with open(file_string, 'r') as f:
+        tweets = json.load(f)
+    tweets = [tweet['text'] for tweet in tweets] # extract 'text' field from tweets
+    # remove @... tokens
+    tweets = [remove_symbols(tweet) for tweet in tweets]
+    df = pd.DataFrame(tweets, columns = ['text'])
+    return df
+
+
+"""
+-------------------- helper functions to get presenters -----------------
+"""
+
+
+"""
+return list of 'PERSON' in tweet"
+"""
 def get_person(tweet):
     words = [(ent.text, ent.label_) for ent in tweet.ents]
-    return ([token[0] for token in list(filter(lambda x: "PERSON" in x, words))])
+    sub_toks = [tok for tok in tweet if (tok.dep_ == "nsubj") ]
+    lst = [token[0] for token in list(filter(lambda x: "PERSON" in x, words))]
+    if 'Drama' in lst:
+        lst.remove('Drama')
+    if 'Jr.' in lst:
+        lst.remove('Jr.')
+    result = []
+    for name in lst:
+        if 'Jr.' in name:
+            name.strip('Jr.')
+        if (len(name.split()) >= 2):
+            result.append(name)
+    return result
 
-# remove punctuations from string
-def removePunctuation(string):
-    string = string.replace("...", " ")
-    punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
-    for x in string.lower():
-        if x in punctuations:
-            string = string.replace(x, "")
-    return string
+"""
+get tweets that have ALL keywords
+"""
+def get_tweets(keywords, df):
+    result = []
+    for t in list(df['text']):
+        if all(x in t.lower() for x in keywords):
+            result.append(t)
+    df = pd.DataFrame(result, columns = ['text'])
+    return df
 
-# return index of word in string
-def index_tweet(tweet, word):
-    tweet = removePunctuation(tweet)
-    if word in tweet.lower().split():
-        idx = tweet.lower().split().index(word)
-        return idx
-    else:
-        return -1
-
-# filter for keywords
-def get_tweets_with_keywords(df, keywords):
-    series = df['text']
-    col = series.str.contains(keywords)
-    df['keyword?'] = col
-    new_df = df[df['keyword?'] == True]
-    return new_df
-
-# look for tweets with award
+"""
+get keywords of award
+"""
 def tweets_contain(category_name, tweets):
     stop_words = set(stopwords.words('english'))
     stop_words.add('-')
@@ -51,42 +103,65 @@ def tweets_contain(category_name, tweets):
 
     return filtered_list
 
-def get_award_tweets(award, data):
-    lst = tweets_contain(award, data['text'])
-    df = pd.DataFrame(lst, columns = ['text'])
-    return df
+"""
+remove punctuation
+"""
+def removePunctuation(string):
+    string = string.replace("...", " ")
+    punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
+    for x in string.lower():
+        if x in punctuations:
+            string = string.replace(x, "")
+    return string
 
-
-# position of NNP compared to 'best'
-def position_of_ppl(tweet, person):
-    tweet = removePunctuation(tweet).lower()
-
-    ppl = person[0].lower().split()[0]
-    ppl_idx = tweet.lower().split().index(ppl)
-
-    best_idx = tweet.lower().split().index('best')
-
-    if (ppl_idx < best_idx):
-        return 1
+"""
+get index of word in tweet
+"""
+def index_tweet(tweet, word):
+    tweet = removePunctuation(tweet)
+    word = removePunctuation(word)
+    if word in tweet.lower().split():
+        idx = tweet.lower().split().index(word)
+        return idx
     else:
-        return 0
+        return -1
 
 def cecil_position(tweet, person):
     names = ['Cecil B. DeMille Award', 'Cecil B. DeMille', 'Cecil']
     tweet = removePunctuation(tweet).lower()
+    return 1
+    for p in person:
+        ppl = p.lower().split()[0]
+        ppl_idx = tweet.lower().split().index(ppl)
+        best_idx = tweet.lower().split().index('cecil')
+        if (ppl_idx < best_idx):
+            return 1
+        else:
+            return 1
 
-    print(person[0].lower().split()[0])
-    print(tweet)
+"""
+return 1 if person mentioned before award
+"""
+def position_of_ppl(tweet, person):
+    tweet = removePunctuation(tweet).lower()
+    if ('best' in tweet):
+        ppl = person[0].lower().split()[0]
+        if ppl in tweet.lower().split():
+            if 'best' in tweet.lower().split():
+                ppl_idx = tweet.lower().split().index(ppl)
 
-    ppl = person[0].lower().split()[0]
-    ppl_idx = tweet.lower().split().index(ppl)
+                best_idx = tweet.lower().split().index('best')
 
-    best_idx = tweet.lower().split().index('cecil')
-
-    if (ppl_idx < best_idx):
-        return 1
+                if (ppl_idx < best_idx):
+                    return 1
+                else:
+                    return 0
+            else:
+                return 1
+        else:
+            return 0
     else:
-        return 0
+        return 1
 
 # True if looking at cecil award
 def get_positions(df, cecil_award = False):
@@ -96,16 +171,15 @@ def get_positions(df, cecil_award = False):
         df['position'] = df.apply(lambda row: position_of_ppl(row['text'], row['full names']), axis = 1)
     return df[df['position'] == 1]
 
-# get keywords of award
-# get keywords of award
+"""
+get keywords of award
+"""
 def get_keywords_of_award(award):
     or_in_award = False
     a = award
     awards_lst = award.split()
-    #print(awards_lst)
+
     if 'or' in awards_lst: or_in_award = True
-
-
     stopWords = set(stopwords.words('english'))
     # remove punctuation marks
     award = award.translate(str.maketrans('', '', string.punctuation))
@@ -113,91 +187,317 @@ def get_keywords_of_award(award):
     award = word_tokenize(award)
     award = [word for word in award if word not in stopwords.words('english')]
     award = [word.lower() for word in award]
-    # remove 'best' and 'award'
+
     if 'best' in award: award.remove('best')
     if 'award' in award: award.remove('award')
     if 'performance' in award: award.remove('performance')
-    if 'motion' in award: award.remove('motion')
-    if 'picture' in award: award.remove('picture')
-    if 'musical' in award: award.remove('musical')
+    if 'made' in award: award.remove('made') #
+    #if 'series' in award: award.remove('series')
+    if 'television' in award:
+        award.remove('television') #
+        award.append('series')
+    if 'comedy' in award: award.remove('comedy') #
+    if 'musical' in award:
+        if 'series' in award:
+            award.remove('series')
+    if 'feature' in award: award.remove('feature')
+    if 'film' in award: award.remove('film')
+    if 'role' in award: award.remove('role')
+    if 'animated' in award:
+        award.remove('animated')
+        award.append('animat')
+    if 'director' in award:
+        if 'motion' in award:
+            if 'picture' in award:
+                award.remove('motion')
+                award.remove('picture')
+
+    if 'mini-series' in award:
+        award.remove('mini-series')
+        award.append('mini')
+        if 'motion' in award:
+            if 'picture' in award:
+                    award.remove('motion')
+                    award.remove('picture')
+    if 'miniseries' in award:
+        award.remove('miniseries')
+        award.append('mini')
+        if 'motion' in award:
+            if 'picture' in award:
+                    award.remove('motion')
+                    award.remove('picture')
+    if 'series' in award: award.remove('series')
+    if 'supporting' in award:
+        award.remove('supporting')
+        award.append('support')
+
     # join words
     award = " ".join(award)
-    #if or_in_award is True: award = award + " or"
-    print("old: {} ... after: {}".format(a, award))
+
+    #print("old: {} ... after: {}".format(a, award))
+
     return award
 
+
+"""
+get indices of key verbs in tweet
+"""
+def get_index(tweet):
+    string = tweet.lower().split()
+    if 'read' in string:
+        return index_tweet(tweet, 'read')
+    if 'introduc' in string:
+        return index_tweet(tweet, 'introduc')
+    if 'introduce' in string:
+        return index_tweet(tweet, 'introduce')
+    if 'introduced' in string:
+        return index_tweet(tweet, 'introduced')
+    if 'introduces' in string:
+        return index_tweet(tweet, 'introduces')
+    if 'reads' in string:
+        return index_tweet(tweet, 'reads')
+    if 'present' in string:
+        return index_tweet(tweet, 'present')
+    if 'presents' in string:
+        return index_tweet(tweet, 'presents')
+    if 'presented' in string:
+        return index_tweet(tweet, 'presented')
+    if 'presenting' in string:
+        return index_tweet(tweet, 'presenting')
+    if 'introducing' in string:
+        return index_tweet(tweet, 'introducing')
+    if 'reading' in string:
+        return index_tweet(tweet, 'reading')
+    if 'gave' in string:
+        return index_tweet(tweet, 'gave')
+    if 'gives' in string:
+        return index_tweet(tweet, 'gives')
+    if 'award' in string:
+        return index_tweet(tweet, 'award')
+    if 'give' in string:
+        return index_tweet(tweet, 'give')
+    if 'giving' in string:
+        return index_tweet(tweet, 'giving')
+    if 'announce' in string:
+        return index_tweet(tweet, 'announce')
+    if 'announces' in string:
+        return index_tweet(tweet, 'announces')
+    if 'announced' in string:
+        return index_tweet(tweet, 'announced')
+
+"""
+get names based on position to key verb
+"""
+def get_names_after_verb(df):
+    result = []
+    for index, row in df.iterrows():
+        tweet = removePunctuation(row.text)
+        string = tweet.lower().split()
+        person_lst = row.filtered
+        idx = row.verb_index
+        for p in person_lst:
+            p = removePunctuation(p)
+            ppl = p.lower().split()
+            if len(ppl) > 0:
+                if ppl[0] in string:
+                    person_idx = string.index(ppl[0])
+                    if 'wins' in string:
+                        wins_idx = string.index('wins')
+                        if wins_idx - 2 == person_idx:
+                            continue
+                    if 'win' in string:
+                        win_idx = string.index('win')
+                        if win_idx - 2 == person_idx:
+                            continue
+                    if 'won' in string:
+                        won_idx = string.index('won')
+                        if won_idx - 2 == person_idx:
+                            continue
+
+                    #if 'win' and 'won' not in string.index(person_idx + 1):
+
+                    if (person_idx > -1):
+                        if (person_idx < idx):
+                            person = p.strip()
+                            result.append(person)
+                        else:
+                            if ('with' in string):
+                                with_idx = string.index('with')
+                                if (with_idx > idx):
+                                    person = p.strip()
+                                    result.append(person)
+    return result
+
+"""
+filter names baed on punctuation and award words
+"""
+def filter_names(name_lst):
+    result = []
+    for name in name_lst:
+        if 'RT' in name:
+            new_name = name.strip('RT')
+        else:
+            new_name = name
+
+        if 'Jr.' in new_name:
+            new_name = new_name.strip('Jr.')
+
+        n = new_name.lower()
+        if 'best' not in n:
+            result.append(new_name)
+    return result
+
+"""
+get tweets with ANY key verb
+"""
+def get_tweets_with_verb(keywords, df):
+    result = []
+    for t in list(df['text']):
+        if any(x in t.lower() for x in keywords):
+            result.append(t)
+    df = pd.DataFrame(result, columns = ['text'])
+    return df
+
+"""
+get mode (top 2) of list
+"""
+def compute_mode(names):
+    result = []
+    counts = Counter(names)
+    maxcount = max(counts.values())
+    for person in counts.items():
+        if len(result) >= 2:
+            break
+        name = person[0]
+        count = person[1]
+        if count == maxcount:
+            result.append(name)
+    return result
+
+def remove_rt_from_tweet(tweet):
+    if 'RT' in tweet:
+        result = tweet.replace("RT", "")
+        return result
+    if 'rt' in tweet:
+        result = tweet.replace("rt", "")
+        return result
+    else:
+        return tweet
+
+def remove_similar_names(names):
+    result = sorted(names)
+    for name in names:
+        similarities = process.extract(name, names)
+        main_person = similarities[0][0]
+        for person in similarities[1:]:
+            if person[0] and main_person in result:
+                if person[1] >= 60:
+                    if person[0] in result:
+                        result.remove(person[0])
+    return result
+
+"""
+get 'or' keywords
+"""
+def get_or_keywords(award):
+    string = award.lower().split()
+    key_1 = []
+    key_2 = []
+    if 'television series' in award:
+        key_1.append('tv')
+        key_1.append('series')
+    if 'or' in string:
+        or_idx = string.index('or')
+        key_2.append(string[or_idx - 1])
+        key_2.append(string[or_idx + 1])
+    return key_1, key_2
+
 def get_presenters(award, data):
-    # start time
-    start = time.time()
-
+    print(award)
+    if (data.shape[0] == 0):
+        return "NA"
     # get keywords
-    keywords = get_keywords_of_award(award)
+    keywords = list(get_keywords_of_award(award).split())
 
-    print(keywords)
+    # get tweets with keywords
+    df = get_tweets(keywords, data)
 
-    # remove RT
-    df = data[data["text"].str.contains("RT") == False]
-
-    # remove tweets that don't have award in it
-    df = get_award_tweets(keywords, df)
-
-    # only get tweets where a key word shows up
-    key_words = re.compile('=read|intoduce|introduced|introduces|reads|present|presents|presented|gave|gives|give|announce|announces|announced', re.IGNORECASE)
-    df = get_tweets_with_keywords(df, key_words)
+    # get presenting tweets
+    tweet_keywords = ['introduc', 'giv', 'gave', 'present', 'read', 'announc']
+    df = get_tweets_with_verb(tweet_keywords, df)
 
     if (df.shape[0] == 0):
-        return "", ""
+        return "NA"
 
-    #print("Award: {} ... shape {}".format(award, df.shape))
 
-    #return df
+    df = df.drop_duplicates(subset = "text")
 
-    # get df with 'present, gave, etc.'
-    df['presents_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'presents'))
-    df['presenter_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'presenter'))
-    df['presenters_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'presenters'))
-    df['presented_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'presented'))
-    df['gave_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'gave'))
-    df['gives_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'gives'))
-    df['give_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'give'))
-    df['announces_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'announces'))
-    df['announce_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'announce'))
-    df['announced_idx'] = df['text'].apply(lambda tweet: index_tweet(tweet, 'announced'))
+    df['filtered text'] = df['text'].apply(lambda x: remove_rt_from_tweet(x))
 
-    #print("\n\nnow look for people\n\n")
 
     # get list of people in tweets
     nlp = spacy.load("en_core_web_sm")
-    df['full names'] = df['text'].apply(lambda x: get_person(nlp(x)))
+    df['full names'] = df['text'].apply(lambda x: get_person(nlp(removePunctuation(x))))
     df = df[df['full names'].str.len() != 0] # remove rows with no 'PERSON'
 
     if (df.shape[0] == 0):
-        return "", ""
+        return "NA"
 
-    #print(df)
-    # get position of NNP
-    if (award == 'cecil b. demille award'):
-        df = get_positions(df, True)
-    else:
-        df = get_positions(df)
-
-    # length of string
-    #len(s.split())
+    df['filtered'] = df['full names'].apply(lambda x: filter_names(x)) #filter names
+    df = df[df['filtered'].str.len() != 0]
 
     if (df.shape[0] == 0):
-        return "", ""
+        return "NA"
 
-    # get person who is talked about 80% of the time
-    presenters = df['full names'].value_counts().argmax()
 
-    # end time
-    end = time.time()
+    #get indices of verbs
+    df['verb_index'] = df['text'].apply(lambda tweet: get_index(tweet))
 
-    print("Time elapsed: {}".format(end - start))
+    # get position of name
+    if (award == 'cecil b. demille award'):
+        df = get_positions(df, True)
+        if (df.shape[0] == 0):
+            return "NA"
+        df = df[df["text"].str.contains("speech") == False]
+        if (df.shape[0] == 0):
+            return "NA"
+        names_after_verbs = get_names_after_verb(df)
+    else:
+        df = get_positions(df)
+        if (df.shape[0] == 0):
+            return "NA"
+        names_after_verbs = get_names_after_verb(df)
 
-    return df, presenters
+    if (df.shape[0] == 0):
+        return "NA"
 
+    # get person who is talked about most of time
+    presenters = compute_mode(names_after_verbs)#get_mode(df['name after verb'])
+    if (df.shape[0] == 0):
+        return "NA"
+    result = ', '.join(remove_similar_names(presenters))
+
+    return result.lower()
+
+
+
+
+"""
+---------------------- get presenters for year ---------------------
+"""
+
+# get all presenters for specific year
 def run_presenters(year):
     data = get_tweet_data(year)
-    df, presenters = get_presenters(award, data)
+
+    seperator = ' '
+    presenters = {}
+    OFFICIAL_AWARDS_1315 = ['cecil b. demille award', 'best motion picture - drama', 'best performance by an actress in a motion picture - drama', 'best performance by an actor in a motion picture - drama', 'best motion picture - comedy or musical', 'best performance by an actress in a motion picture - comedy or musical', 'best performance by an actor in a motion picture - comedy or musical', 'best animated feature film', 'best foreign language film', 'best performance by an actress in a supporting role in a motion picture', 'best performance by an actor in a supporting role in a motion picture', 'best director - motion picture', 'best screenplay - motion picture', 'best original score - motion picture', 'best original song - motion picture', 'best television series - drama', 'best performance by an actress in a television series - drama', 'best performance by an actor in a television series - drama', 'best television series - comedy or musical', 'best performance by an actress in a television series - comedy or musical', 'best performance by an actor in a television series - comedy or musical', 'best mini-series or motion picture made for television', 'best performance by an actress in a mini-series or motion picture made for television', 'best performance by an actor in a mini-series or motion picture made for television', 'best performance by an actress in a supporting role in a series, mini-series or motion picture made for television', 'best performance by an actor in a supporting role in a series, mini-series or motion picture made for television']
+
+    for category_name in OFFICIAL_AWARDS_1315:
+        # print(category_name)
+        data = get_tweet_data(year)
+        presenter_lst = get_presenters(category_name, data)
+        presenters[category_name] = presenter_lst
+
     return presenters
