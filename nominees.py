@@ -26,8 +26,8 @@ def get_tweet_data(year):
         tweets = json.load(f)
     
     # extract 'text' field from tweets
-    tweets = [tweet['text'] for tweet in tweets]
-    # tweets = [tweet['text'] for tweet in tweets if 'best' in tweet['text'].lower()]
+    # tweets = [tweet['text'] for tweet in tweets]
+    tweets = [tweet['text'] for tweet in tweets if ' best ' in tweet['text'].lower()]
     
     # remove @,# tokens
     tweets = [remove_symbols(tweet) for tweet in tweets]
@@ -157,7 +157,7 @@ def run_nominees(year):
     for a in OFFICIAL_AWARDS_1315:
         d[a] = {}
 
-    keywords_lst = [['win', 'hope', ' best '], ['nominated for', ' best '], ['should have won', ' best '], ['didn\'t win', ' best ']]
+    keywords_lst = [['win', 'hope', ' best '], ['nominated for', ' best '], ['should have won', ' best '], ['didn\'t win', ' best '], ['nomin', 'tv', 'mini']]
     # ['nomin', ' best ', 'tv'], ['nomin', ' best act']
     nlp = spacy.load('en_core_web_sm')
     for keywords in keywords_lst:
@@ -222,7 +222,6 @@ def run_nominees(year):
     #         print('Score:', best_score, '||| Category:', best_category)
 
             if best_category == None:
-    #             print()
                 continue
 
             if names:
@@ -231,7 +230,6 @@ def run_nominees(year):
                         d[best_category][name.lower()] += 1
                     else:
                         d[best_category][name.lower()] = 1
-    #         print()
 
     for key in d:
         d[key] = remove_category_tokens(key, d[key])
