@@ -160,7 +160,7 @@ def run_nominees(year):
         categories = OFFICIAL_AWARDS_1315
     else:
         categories = OFFICIAL_AWARDS_1819
-    
+
     d = {}
     for a in categories:
         d[a] = {}
@@ -169,10 +169,6 @@ def run_nominees(year):
     # ['nomin', ' best ', 'tv'], ['nomin', ' best act']
     nlp = spacy.load('en_core_web_sm')
     for keywords in keywords_lst:
-        # keywords = 
-        # keywords = ['should have won', ' best ']
-        # keywords = ['didn\'t win', 'best']
-        # keywords = ['best actress']
 
         count = 0
         trys = []
@@ -180,9 +176,6 @@ def run_nominees(year):
             if all(x in t.lower() for x in keywords) and 'dress' not in t.lower():
                 trys.append(t)
                 count += 1
-        print(count)
-        # print(trys)
-
 
         for t1 in trys:
             t1 = test_trans(t1)
@@ -190,13 +183,9 @@ def run_nominees(year):
             if names == []:
                 names = extract_one_name(nlp(t1), nlp)
                 if names == []:
-    #                 print('No double or single names')
-    #                 print()
                     continue
-    #         print(t1)
 
             t2 = t1.lower().split()
-
 
             award = []
             start = t2.index('best')
@@ -214,8 +203,6 @@ def run_nominees(year):
                 s = s + x + ' '
             award = s
 
-    #         print('Name:', names, '||| Award:', award)
-
             best_score = 0
             best_category = None
             for a in categories:
@@ -227,7 +214,6 @@ def run_nominees(year):
                 if score > best_score:
                     best_score = score
                     best_category = a
-    #         print('Score:', best_score, '||| Category:', best_category)
 
             if best_category == None:
                 continue
@@ -249,6 +235,5 @@ def run_nominees(year):
         nominees_dict[key] = [x[0] for x in high]
         while len(nominees_dict[key]) < 4:
             nominees_dict[key].append('L')
-    print(nominees_dict)
     return nominees_dict
 

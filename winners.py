@@ -103,14 +103,12 @@ def remove_category_tokens(category, pronouns_dict):
     for token in tokens:
         for key in pronouns_dict:
             if token in key:
-#                 print(token, key)
                 pronouns_dict[key] = 0
     return pronouns_dict
 
 def get_category_nominees(category, tweets, nlp):
     # filter for tweets which contain the category name regex
     category_tweets = tweets_contain(category, tweets)
-    print('Category Tweets:', len(category_tweets))
 
     # create a dictionary of person names/film titles
     if 'actor' in category or 'actress' in category:
@@ -130,7 +128,6 @@ def get_category_nominees(category, tweets, nlp):
 
 def run_winners(year):
     tweets = get_tweet_data(year)
-    print('Total Tweets:', len(tweets))
     
     seperator = ' '
     nominees = {}
@@ -149,32 +146,8 @@ def run_winners(year):
         # if not any(x in category_name for x in ['act', 'director', 'cecil']):
         #     category_nominees_string = find_movie_title(category_nominees_string, year, category_name, nlp)
         nominees[category_name] = category_nominees_string
-        print(category_name, ':', category_nominees_string)
+        # print(category_name, ':', category_nominees_string)
     return nominees
-
-# def find_movie_title(string, year, category_name, nlp):
-#     # name = extract_full_name(nlp('quentin tarantino django'), nlp)
-#     # if name:
-#     #     string = string.replace(name, '')
-    
-#     # get movie titles in [year-1 to year]
-#     df = pd.read_csv('movies.csv', encoding='utf8')
-#     if 'television' not in category_name:
-#         df = df[df['type'].isin(['movie', 'tvMovie'])]
-#     year = int(year)
-#     imdb_movies = df[df['start'].isin([year, year-1])]['title'].tolist()
-
-#     max_ratio = 70
-#     max_title = string
-#     for title in imdb_movies:
-#         r = fuzz.token_sort_ratio(string, title)
-#         if r > max_ratio:
-#             print(fuzz.token_sort_ratio(string, title), fuzz.token_sort_ratio(title, string), title, string)
-#             max_ratio = r
-#             max_title = title
-#         if r == 100:
-#             break
-#     return max_title
 
 
 def get_person_names(list_of_tweets, nlp):
@@ -194,12 +167,9 @@ def get_person_names(list_of_tweets, nlp):
 
     for tweet in list_of_tweets:
         counter += 1
-        # if counter % 1000 == 0:
-        #     print(counter)
 
         if counter % m != 0:
             continue
-        # names = extract_full_name(nlp(tweet), nlp)
         
         nlp_doc = nlp(tweet)
         matches = matcher(nlp_doc)
@@ -213,59 +183,9 @@ def get_person_names(list_of_tweets, nlp):
                 names_dictionary[name] += 1
             else:
                 names_dictionary[name] = 1
-            
             break
 
-        # names = get_person(nlp(tweet))
-        # if names:
-        #     for name in names:
-        #         name = name.lower()
-        #         if name in names_dictionary:
-        #             names_dictionary[name] += 1
-        #         else:
-        #             names_dictionary[name] = 1
     return names_dictionary
-      
-# def extract_full_name(nlp_doc, nlp):
-#     matcher = Matcher(nlp.vocab)
-#     pattern = [{'POS': 'PROPN'}, {'POS': 'PROPN'}]
-#     matcher.add('FULL_NAME', None, pattern)
-#     matches = matcher(nlp_doc)
-#     for match_id, start, end in matches:
-#         span = nlp_doc[start:end]
-#         return [span.text]
-
-# def extract_one_name(nlp_doc, nlp):
-#     matcher = Matcher(nlp.vocab)
-#     pattern = [{'POS': 'PROPN'}]
-#     matcher.add('FULL_NAME', None, pattern)
-#     matches = matcher(nlp_doc)
-#     for match_id, start, end in matches:
-#         span = nlp_doc[start:end]
-#         return [span.text]
-
-# def extract_full_name(nlp_doc, nlp):
-#     matcher = Matcher(nlp.vocab)
-#     pattern = [{'POS': 'PROPN'}, {'POS': 'PROPN'}]
-#     matcher.add('FULL_NAME', None, pattern)
-#     matches = matcher(nlp_doc)
-#     names = []
-#     for match_id, start, end in matches:
-#         span = nlp_doc[start:end]
-#         names.append(span.text)
-#     return names
-    
-# def extract_one_name(nlp_doc, nlp):
-#     matcher = Matcher(nlp.vocab)
-#     pattern = [{'POS': 'PROPN'}]
-#     matcher.add('FULL_NAME', None, pattern)
-#     matches = matcher(nlp_doc)
-#     names = []
-#     for match_id, start, end in matches:
-#         span = nlp_doc[start:end]
-#         names.append(span.text)
-#     return names
-
 
 def get_person(tweet):
     words = [(ent.text, ent.label_) for ent in tweet.ents]

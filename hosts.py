@@ -24,8 +24,8 @@ def remove_symbols(a_tweet):
 
 # load tweet data
 def get_tweet_data(year):
-    if (year == 2020):
-        return pd.read_json('gg2020.json', lines = True)
+    # if (year == 2020):
+    #     return pd.read_json('gg2020.json', lines = True)
     file_string = 'gg' + str(year) + '.json'
     tweets = {}
     with open(file_string, 'r') as f:

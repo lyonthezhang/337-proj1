@@ -1,6 +1,11 @@
 from winners import run_winners
 from nominees import run_nominees
 from hosts import run_hosts
+from awards import run_awards
+from presenters import run_presenters
+from redcarpet import run_redcarpet
+import json
+import time
 
 '''Version 0.35'''
 
@@ -12,14 +17,26 @@ def get_hosts(year):
     '''Hosts is a list of one or more strings. Do NOT change the name
     of this function or what it returns.'''
     # Your code here
+    print('Running Hosts...')
     hosts = run_hosts(year)
+
+    f = open(str(year) + "Hosts.txt", "w")
+    f.write(f"Hosts: {hosts}")
+    f.close()
+
     return hosts
 
 def get_awards(year):
     '''Awards is a list of strings. Do NOT change the name
     of this function or what it returns.'''
     # Your code here
-    awards = ['a', 'b', 'c']
+    print('Running Awards...')
+    awards = run_awards(year)
+    f = open(str(year) + "Awards.txt", "w")
+    f.write(f"Awards:\n")
+    for a in awards:
+        f.write(f"{a},\n")
+    f.close()
     return awards
 
 def get_nominees(year):
@@ -27,11 +44,16 @@ def get_nominees(year):
     names as keys, and each entry a list of strings. Do NOT change
     the name of this function or what it returns.'''
     # Your code here
+    print('Running Nominees...')
+    start = time.time()
+    nominees = run_nominees(year)
+    
+    f = open(str(year) + "Nominees.txt", "w")
+    for key in nominees:
+        f.write(f"Category: {key}\nNominees: {nominees[key]} \n")
+    f.close()
 
-    # nominees = run_nominees(year)
-    nominees = {}
-    for award in OFFICIAL_AWARDS_1315:
-        nominees[award] = []
+    print('Nominees Time:', time.time() - start)
     return nominees
 
 def get_winner(year):
@@ -39,10 +61,16 @@ def get_winner(year):
     names as keys, and each entry containing a single string.
     Do NOT change the name of this function or what it returns.'''
     # Your code here
-    # winners = {}
-    # for award in OFFICIAL_AWARDS_1315:
-    #     winners[award] = []
+    print('Running Winners...')
+    start = time.time()
     winners = run_winners(year)
+    
+    f = open(str(year) + "Winners.txt", "w")
+    for key in winners:
+        f.write(f"Category: {key}\nWinner: {winners[key]} \n")
+    f.close()
+
+    print('Winners Time:', time.time() - start)
     return winners
 
 def get_presenters(year):
@@ -50,9 +78,16 @@ def get_presenters(year):
     names as keys, and each entry a list of strings. Do NOT change the
     name of this function or what it returns.'''
     # Your code here
-    presenters = {}
-    for award in OFFICIAL_AWARDS_1315:
-        presenters[award] = []
+    print('Running Presenters...')
+    start = time.time()
+    presenters = run_presenters(year)
+    
+    f = open(str(year) + "Presenters.txt", "w")
+    for key in presenters:
+        f.write(f"Category: {key}\nPresenter: {presenters[key]} \n")
+    f.close()
+
+    print('Presenters Time:', time.time() - start)
     return presenters
 
 def pre_ceremony():
