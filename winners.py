@@ -13,9 +13,9 @@ from nltk.tag import pos_tag
 from nltk.corpus import stopwords
 
 # Run the 1st time
-# nltk.download('punkt')
-# nltk.download('averaged_perceptron_tagger')
-# nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+nltk.download('stopwords')
 # install python-Levenshtein
 
 def get_tweet_data(year):
