@@ -21,7 +21,7 @@ For get_presenters, we filtered the tweets for keywords from the specific award.
 
 ### Extra Functions:
 **Red Carpet:**
-<br> For red carpet, we return the 3 best dressed and 3 worst dressed people of the night. First we filter for tweets with the words 'best dress' and 'worst dress'. Then we create a dictionary of names and every time a person is mentioned, the counter for best dress or worst dress increments. We return the 3 highest best dress and 3 highest worst dress scores.
+<br> For red carpet, we return the 5 best dressed and 5 worst dressed people of the night. First we filter for tweets with the words 'best dress' and 'worst dress'. Then we create a dictionary of names and every time a person is mentioned, the counter for best dress or worst dress increments. We return the 3 highest best dress and 3 highest worst dress scores.
 <br>
 <br>**Sentiment:**
 <br> For sentiment, we used the library TextBlob in order to determine how people were tweeting about the awards show. We created linear counters of sentiment from 'ABSOLUTELY HORRENDOUS' to 'ASTRONOMICALLY BEAUTIFULLY WONDERFUL'. We returned the most common sentiment and the average positive and negative scores among the tweets.
