@@ -1,4 +1,4 @@
-# Golden Globe Project
+# Golden Globes Project
 ##### Team 13
 ##### Members: Lyon Zhang, David Zane, Christine Garver
 
