@@ -8,3 +8,4 @@ regex==2018.7.11
 fuzzysearch==0.3.0
 fuzzywuzzy==0.16.0
 spacy==2.0.12
+json5==0.8.5
