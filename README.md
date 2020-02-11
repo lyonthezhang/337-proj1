@@ -2,7 +2,7 @@
 #### Team 13
 #### Members: Lyon Zhang, David Zane, Christine Garver
 
-We wrote separate python files for each function called in gg_api.py. We use NLP to find information about the Golden Globe awards (hosts, presenters, winners, nominees, best/worst dressed, overall sentiment). This program should be generalizable to other awards shows.
+We wrote separate python files for each function called in gg_api.py. We use NLP to find information about the Golden Globe awards (hosts, presenters, winners, nominees, best/worst dressed, overall sentiment). This program should be generalizable to other awards shows. When you run the autograder, 5 different txt files are created with human readable answers.
 
 ### get_hosts:
 For get_hosts, we filtered the tweets for the word 'host' and removed tweets that had the phrase 'next year' in it. Then we got the list of people mentioned using Spacy and chose the top 2 most mentioned people.
@@ -28,12 +28,13 @@ For get_presenters, we filtered the tweets for keywords from the specific award.
 
 ### How to Run
 1. Download and unzip folder.
-2. Run `pip install -r requirements.txt` for Python2 or `pip3 install -r requirements.txt` for Python3.
-3. Run: `python -m spacy download en_core_web_sm` to download spacy library.
-4. Make sure tweet data is in same directory and saved as a json with the name format 'gg' + year.
-5. Run `python3 autograder.py 2013` to get the information about the awards show from year 2013. 2013 can be replaced with another year to get information from another year.
-6. To run the extra function redcarpet.py, run `python3 redcarpet.py 2013` to get the information about the best and worst dressed from year 2013. 2013 can be replaced with another year to get information from another year.
-7. To run the extra function sentiment.py, run `python3 sentiment.py 2013` to get the information about the best and worst dressed from year 2013. 2013 can be replaced with another year to get information from another year.
+2. Create a conda environment to run the program in using `conda create -n NAME_OF_ENV`.
+3. Run `pip install -r requirements.txt` for Python2 or `pip3 install -r requirements.txt` for Python3.
+4. Run: `python -m spacy download en_core_web_sm` to download spacy library.
+5. Make sure tweet data is in same directory and saved as a json with the name format 'gg' + year.
+6. Run `python3 autograder.py 2013` to get the information about the awards show from year 2013. 2013 can be replaced with another year to get information from another year.
+7. To run the extra function redcarpet.py, run `python3 redcarpet.py 2013` to get the information about the best and worst dressed from year 2013. 2013 can be replaced with another year to get information from another year.
+8. To run the extra function sentiment.py, run `python3 sentiment.py 2013` to get the information about the best and worst dressed from year 2013. 2013 can be replaced with another year to get information from another year.
 
 ### Python Libraries Imported:
 - from textblob import TextBlob
