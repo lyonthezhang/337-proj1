@@ -1,4 +1,4 @@
-# Golden Globes Project
+# Golden Globe Project
 ##### Team 13
 ##### Members: Lyon Zhang, David Zane, Christine Garver
 
@@ -13,6 +13,8 @@ For get_awards, we filtered the tweets for key verbs such as 'best' and 'goes'. 
 #### get_winners:
 For get_winners, we filter tweets for keywords from the specific award. Then we use a dictionary to track the people mentioned in tweets and the number of times they are mentioned. We return the most mentioned people.
 
+#### get_nominees:
+
 #### get_presenters:
 For get_presenters, we filtered the tweets for keywords from the specific award. Therefore, we removed stopwords and other words such as 'miniseries' that many people did not use to describe a certain award. Then we filtered the remaining tweets for key presenting verbs, such as: introduce, read, give, announce, etc. Next, we used Spacy to find the full names of people mentioned. In order to prevent from retrieving the winner's name, we made sure the name mentioned came before the key verb because most of the time winners are mentioned after the key verb. After filtering for similarities between the list of remaining names (to make sure we weren't counting nicknames for people as 2 different people), we returned the 2 most mentioned people in the tweets.
 
@@ -22,6 +24,13 @@ For get_presenters, we filtered the tweets for keywords from the specific award.
 <br>
 <br>**Sentiment:**
 <br> For sentiment, we used the library TextBlob in order to determine how people were tweeting about the awards show. We created linear counters of sentiment from 'ABSOLUTELY HORRENDOUS' to 'ASTRONOMICALLY BEAUTIFULLY WONDERFUL'. We returned the most common sentiment and the average positive and negative scores among the tweets.
+
+#### How to Run
+1. Download and unzip folder.
+2. Run `pip install -r requirements.txt` for Python2 or `pip3 install -r requirements.txt` for Python3.
+3. Run: `python -m spacy download en_core_web_sm` to download spacy library.
+4. Make sure tweet data is in same directory and saved as a json with the name format 'gg' + year.
+5. Run `python3 autograder.py 2013` to get the information about the awards show from year 2013. 2013 can be replaced with another year to get information from another year.
 
 #### Python Libraries Imported:
 - from textblob import TextBlob
@@ -40,7 +49,5 @@ For get_presenters, we filtered the tweets for keywords from the specific award.
 - import spacy
 - from statistics import mode
 - import string
-- import difflib
-- from scipy import stats
 - from spacy.matcher import Matcher
 - import math
