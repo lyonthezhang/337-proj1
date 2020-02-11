@@ -1,4 +1,4 @@
-# Golden Globe Project
+# Golden Globes Project
 ##### Team 13
 ##### Members: Lyon Zhang, David Zane, Christine Garver
 
@@ -14,6 +14,7 @@ For get_awards, we filtered the tweets for key verbs such as 'best' and 'goes'. 
 For get_winners, we filter tweets for keywords from the specific award. Then we use a dictionary to track the people mentioned in tweets and the number of times they are mentioned. We return the most mentioned people.
 
 #### get_nominees:
+For nominees, we filtered the tweets for the key words from the award and key verbs such as 'should have won', 'best', 'didn't win', etc. Then we extracted names from the tweets and stopped extracting names in a tweet when we hit a word from an end_word list that had words such as 'award', 'drama', etc. Then we returned the most mentioned people.
 
 #### get_presenters:
 For get_presenters, we filtered the tweets for keywords from the specific award. Therefore, we removed stopwords and other words such as 'miniseries' that many people did not use to describe a certain award. Then we filtered the remaining tweets for key presenting verbs, such as: introduce, read, give, announce, etc. Next, we used Spacy to find the full names of people mentioned. In order to prevent from retrieving the winner's name, we made sure the name mentioned came before the key verb because most of the time winners are mentioned after the key verb. After filtering for similarities between the list of remaining names (to make sure we weren't counting nicknames for people as 2 different people), we returned the 2 most mentioned people in the tweets.
