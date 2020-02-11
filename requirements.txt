@@ -9,3 +9,4 @@ fuzzysearch==0.3.0
 fuzzywuzzy==0.16.0
 spacy==2.0.12
 json5==0.8.5
+textblob==0.15.3
