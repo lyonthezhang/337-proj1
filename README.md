@@ -21,7 +21,7 @@ For get_presenters, we filtered the tweets for keywords from the specific award.
 
 ### Extra Functions:
 **Red Carpet:**
-<br> For red carpet, we return the 5 best dressed and 5 worst dressed people of the night. First we filter for tweets with the words 'best dress' and 'worst dress'. Then we create a dictionary of names and every time a person is mentioned, the counter for best dress or worst dress increments. We return the 3 highest best dress and 3 highest worst dress scores.
+<br> For red carpet, we return the 5 best dressed, 5 worst dressed, and 5 most controversial dressed people of the night. First we filter for tweets with the words 'best dress' and 'worst dress'. Then we create a dictionary of names and every time a person is mentioned, the counter for best dress or worst dress increments. We return the 5 highest best dressed, 5 highest worst dressed, and 5 most controversial scores. We define a score as controversial if the ratio between 'best dress' and 'worst dress' is close to 1.
 <br>
 <br>**Sentiment:**
 <br> For sentiment, we used the library TextBlob in order to determine how people were tweeting about the awards show. We created linear counters of sentiment from 'ABSOLUTELY HORRENDOUS' to 'ASTRONOMICALLY BEAUTIFULLY WONDERFUL'. We returned the most common sentiment and the average positive and negative scores among the tweets.
@@ -32,6 +32,8 @@ For get_presenters, we filtered the tweets for keywords from the specific award.
 3. Run: `python -m spacy download en_core_web_sm` to download spacy library.
 4. Make sure tweet data is in same directory and saved as a json with the name format 'gg' + year.
 5. Run `python3 autograder.py 2013` to get the information about the awards show from year 2013. 2013 can be replaced with another year to get information from another year.
+6. To run the extra function redcarpet.py, run `python3 redcarpet.py 2013` to get the information about the best and worst dressed from year 2013. 2013 can be replaced with another year to get information from another year.
+7. To run the extra function sentiment.py, run `python3 sentiment.py 2013` to get the information about the best and worst dressed from year 2013. 2013 can be replaced with another year to get information from another year.
 
 ### Python Libraries Imported:
 - from textblob import TextBlob
