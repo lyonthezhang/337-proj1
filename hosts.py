@@ -1,20 +1,13 @@
 import numpy as np
 import pandas as pd
-#import matplotlib.pyplot as plt
-import time
 import nltk
 from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 import spacy
-#import Levenshtein
-from statistics import mode
 import json
 import string
 import re
-import difflib
 from fuzzywuzzy import process
-from scipy import stats
-#%matplotlib inline
 from collections import Counter
 from spacy.matcher import Matcher
 
@@ -42,11 +35,6 @@ def get_tweet_data(year):
     tweets = [remove_symbols(tweet) for tweet in tweets]
     df = pd.DataFrame(tweets, columns = ['text'])
     return df
-
-# return list of 'PERSON' in tweet
-def get_person(tweet):
-    words = [(ent.text, ent.label_) for ent in tweet.ents]
-    return ([token[0] for token in list(filter(lambda x: "PERSON" in x, words))])
 
 def get_person_names(list_of_tweets, nlp):
     '''
@@ -104,20 +92,19 @@ def get_hosts(data, year):
     data = data.drop_duplicates(subset = "text")
 
     host_data = data[data['text'].str.contains("host")] # get tweets with 'host' in text
-    #host_data = host_data[host_data['text'].str.contains(str(year))]
     host_df = host_data[host_data["text"].str.contains("next year") == False] # remove tweets with 'next year'
 
     lst = list(host_df['text'])
-    ppl = get_person_names(lst, nlp)
+    ppl = get_person_names(lst, nlp) # get names of people mentioned
     ppl.pop('golden globes', None)
     ppl.pop('golden globe', None)
-    category_nominees = get_top_percent(ppl, percentile=0.20)
+    category_nominees = get_top_percent(ppl, percentile=0.20) # get most mentioned people
 
-    names = remove_similar_names(category_nominees)
+    names = remove_similar_names(category_nominees) # remove similar names
 
     return names
 
-
+# get hosts for specific year
 def run_hosts(year):
     data = get_tweet_data(year)
     hosts = get_hosts(data, year)
